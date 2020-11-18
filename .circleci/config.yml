@@ -1,11 +1,29 @@
 ---
-version: 2
+version: 2.1
+orbs:
+  node: circleci/node@4.1.0
 jobs:
-  build:
+  test:
+    parameters:
+      node-version:
+        type: string
     docker:
-      - image: dickeyxxx/cli-engine-docker:v1.3.1
+      - image: cimg/base:stable
     working_directory: ~/cli-plugin
     steps:
       - checkout
-      - run: yarn
+      - node/install:
+          node-version: << parameters.node-version >>
+          lts: true
+          install-yarn: true
       - run: yarn test && bash <(curl -s https://codecov.io/bash)
+workflows:
+  matrix-tests:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              node-version:
+                - "10"
+                - "12"
+                - "14"
